@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Calculator</string>
+    <string name="start_text">0.0</string>
+    <string name="zero_button">0</string>
+    <string name="one_button">1</string>
+    <string name="two_button">2</string>
+    <string name="three_button">3</string>
+    <string name="four_button">4</string>
+    <string name="five_button">5</string>
+    <string name="six_button">6</string>
+    <string name="seven_button">7</string>
+    <string name="eight_button">8</string>
+    <string name="nine_button">9</string>
+    <string name="point_button">.</string>
+    <string name="plus_button">+</string>
+    <string name="minus_button">-</string>
+    <string name="result_button">=</string>
+    <string name="percent_button">%</string>
+    <string name="divide_button">\u00F7</string>
+    <string name="multiply_button">\u00D7</string>
+    <string name="change_sign_button">\u2213</string>
+    <string name="factorial_button">!</string>
+    <string name="sqrt_button">\u221A</string>
+    <string name="pow_button">x\u00B2</string>
+    <string name="clear_button">C</string>
+    <string name="clear_all_button">CE</string>
+    <string name="copied">Number copied</string>
+</resources>
