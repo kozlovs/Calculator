@@ -1,14 +1,9 @@
 package com.example.android.calculator.viewmodel
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.android.calculator.R
 import com.example.android.calculator.repository.RepositoryImpl
-import kotlin.math.pow
+import kotlin.math.*
 
 class CalkViewModel : ViewModel() {
     private val plus = " + "
@@ -16,7 +11,6 @@ class CalkViewModel : ViewModel() {
     private val multiply = " \u00D7 "
     private val divide = " \u00F7 "
     private val zero = "0.0"
-
     private var a = 0.0
     private var b = 0.0
     private var result = 0.0
@@ -24,82 +18,79 @@ class CalkViewModel : ViewModel() {
     private var pointOn = false
     private var resultOn = false
     private var signOn = false
-    private var currentLine = zero
-    private var recentLine = ""
+    private var empty = ""
     private var sign: String? = null
 
     private val repository = RepositoryImpl()
     val display = MutableLiveData(zero)
+    val history = MutableLiveData("")
     val data = repository.getAll()
 
     fun setNumber(number: Int) {
-        currentLine = if (pointOn) {
-            if (currentLine.endsWith(".0")) "${
-                currentLine.toDouble().toInt()
-            }.$number" else "${currentLine.toDouble()}$number"
+
+        display.value = if (pointOn) {
+            if (display.value.toString().endsWith(".0")) "${
+                display.value.toString().toDouble().toInt()
+            }.$number" else "${display.value.toString().toDouble()}$number"
         } else {
-            if (currentLine.toDouble() == 0.0) "${number.toDouble()}" else "${
-                currentLine.toDouble().toInt()
+            if (display.value.toString().toDouble() == 0.0) "${number.toDouble()}" else "${
+                display.value.toString().toDouble().toInt()
             }$number.0"
         }
-        display.value = currentLine
     }
 
     fun clear() {
-        currentLine = zero
-        recentLine = ""
+        display.value = zero
+        history.value = empty
         a = 0.0
         b = 0.0
         signOn = false
         pointOn = false
         resultOn = false
-        display.value = currentLine
-//        recentDisplay(recentLine)
     }
 
     fun backspace() {
-        if (currentLine == zero) {
+        if (display.value == zero) {
             pointOn = false
             signOn = false
             return
-        } else if (currentLine.isBlank()) {
-            currentLine = zero
+        } else if (display.value.toString().isBlank()) {
+            display.value = zero
             pointOn = false
             signOn = false
-        } else if (currentLine.endsWith(".0")) {
-            if (currentLine.length > 3) {
-                currentLine = "" + currentLine.toDouble().toInt()
-                currentLine = currentLine.substring(0, currentLine.length - 1) + ".0"
+        } else if (display.value.toString().endsWith(".0")) {
+            if (display.value.toString().length > 3) {
+                display.value = "" + display.value.toString().toDouble().toInt()
+                display.value = display.value.toString()
+                    .substring(0, display.value.toString().length - 1) + ".0"
             } else {
-                currentLine = zero
+                display.value = zero
             }
             pointOn = false
             signOn = false
-        } else currentLine = currentLine.substring(0, currentLine.length - 1)
-        if (currentLine.endsWith(".")) {
+        } else display.value =
+            display.value.toString().substring(0, display.value.toString().length - 1)
+        if (display.value.toString().endsWith(".")) {
             pointOn = false
             signOn = false
-            currentLine += 0
+            display.value += 0
         }
-        display.value = currentLine
     }
 
-    fun setSign(action: Actions) {
+    private fun setSign(action: Actions) {
         if (signOn) calculateResult()
-        a = currentLine.toDouble()
+        a = display.value.toString().toDouble()
         sign = when (action) {
             Actions.PLUS -> plus
             Actions.MINUS -> minus
             Actions.MULTIPLY -> multiply
             Actions.DIVIDE -> divide
         }
-        recentLine = currentLine + sign
-        currentLine = zero
+        history.value = display.value.toString() + sign
+        display.value = zero
         currentAction = action
         signOn = true
         pointOn = false
-//        recentDisplay(recentLine)
-        display.value = currentLine
     }
 
     fun plus() {
@@ -119,27 +110,24 @@ class CalkViewModel : ViewModel() {
     }
 
     fun changeSign() {
-        if (currentLine.toDouble() != 0.0) currentLine = "" + currentLine.toDouble() * -1
-        display.value = currentLine
+        if (display.value.toString().toDouble() != 0.0)
+            display.value = (display.value.toString().toDouble() * -1).toString()
     }
 
     fun factorial() {
-        if (currentLine.endsWith(".0") && currentLine != zero) {
+        if (display.value.toString().endsWith(".0") && display.value.toString() != zero) {
             var result = 1
-            for (i in 1..currentLine.toDouble().toInt()) result *= i
-            currentLine = "$result.0"
-            display.value = currentLine
+            for (i in 1..display.value.toString().toDouble().toInt()) result *= i
+            display.value = "$result.0"
         }
     }
 
     fun pow() {
-        currentLine = "${currentLine.toDouble().pow(2.0)}"
-        display.value = currentLine
+        display.value = display.value.toString().toDouble().pow(2.0).toString()
     }
 
     fun sqrt() {
-        currentLine = "${kotlin.math.sqrt(currentLine.toDouble())}"
-        display.value = currentLine
+        display.value = sqrt(display.value.toString().toDouble()).toString()
     }
 
     fun point() {
@@ -147,23 +135,21 @@ class CalkViewModel : ViewModel() {
     }
 
     fun result() {
-        if (currentAction == null) //отмена на случай, если не выбрано действие
-            return
-        calculateResult()
-        resultOn = true
-        pointOn = false
-        signOn = false
-//        recentDisplay(recentLine)
-        display.value = currentLine
+        if (currentAction != null) {
+            calculateResult()
+            resultOn = true
+            pointOn = false
+            signOn = false
+        }
     }
 
-    fun calculateResult() { //вычисление результата
+    private fun calculateResult() { //вычисление результата
         if (resultOn && !signOn) { //отображение истории при повторном нажатии на "="
-            a = currentLine.toDouble()
-            recentLine = "$currentLine$sign$b ="
+            a = display.value.toString().toDouble()
+            history.value = "${display.value}$sign$b ="
         } else { //отображение истории при нажатии на "="
-            b = currentLine.toDouble()
-            recentLine = "$recentLine$currentLine ="
+            b = display.value.toString().toDouble()
+            history.value = "${history.value.toString()} ${display.value.toString()} ="
         }
         result = when (currentAction) {
             Actions.PLUS -> a + b
@@ -172,13 +158,13 @@ class CalkViewModel : ViewModel() {
             Actions.DIVIDE -> a / b
             else -> return
         }
-        currentLine = "$result"
+        display.value = result.toString()
     }
 
     fun percent() { //вычисление процентов
         if (currentAction == null || resultOn) return
-        b = currentLine.toDouble()
-        recentLine = "$recentLine$currentLine % ="
+        b = display.value.toString().toDouble()
+        history.value = "${history.value.toString()}${display.value.toString()} % ="
         result = when (currentAction) {
             Actions.PLUS -> a + b * a / 100
             Actions.MINUS -> a - b * a / 100
@@ -186,11 +172,9 @@ class CalkViewModel : ViewModel() {
             Actions.DIVIDE -> a / b * 100
             else -> return
         }
-        currentLine = "" + result
+        display.value = result.toString()
         resultOn = true
         pointOn = false
-//        recentDisplay(recentLine)
-        display.value = currentLine
     }
 
     fun copy() {

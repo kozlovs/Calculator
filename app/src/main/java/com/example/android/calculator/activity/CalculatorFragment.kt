@@ -11,23 +11,23 @@ import com.example.android.calculator.viewmodel.CalkViewModel
 
 class CalculatorFragment : Fragment() {
 
-
+    private lateinit var binding: FragmentCalculatorBinding
     private val viewModel: CalkViewModel by viewModels(
         ownerProducer = ::requireParentFragment
     )
-    lateinit var display: String
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentCalculatorBinding.inflate(inflater, container, false)
-        initViews(binding)
+        binding = FragmentCalculatorBinding.inflate(inflater, container, false)
+        bind()
+        updateView()
         return binding.root
     }
 
-    private fun initViews(binding: FragmentCalculatorBinding) {
+    private fun bind() {
         binding.apply {
             button0.setOnClickListener { viewModel.setNumber(0) }
             button1.setOnClickListener { viewModel.setNumber(1) }
@@ -59,11 +59,15 @@ class CalculatorFragment : Fragment() {
 
             buttonCopy.setOnClickListener { viewModel.copy() }
         }
+    }
 
+    private fun updateView() {
         viewModel.display.observe(viewLifecycleOwner) {
-            display = it
-            binding.progressBar.progress = display.length - 1
+            binding.progressBar.progress = it.length - 1
             binding.currentDisplayTextView.setText(it)
+        }
+        viewModel.history.observe(viewLifecycleOwner) {
+            binding.recentDisplayTextView.text = it
         }
     }
 }
