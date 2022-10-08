@@ -4,9 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-
-    android:visibility="visible"
-    tools:context=".MainActivity"
+    tools:context=".activity.CalculatorFragment"
     tools:visibility="visible">
 
     <LinearLayout
@@ -29,13 +27,15 @@
             android:layout_marginTop="8dp"
             android:accessibilityHeading="false">
 
-            <TextView
+            <EditText
                 android:id="@+id/currentDisplayTextView"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/start_text"
-                android:textSize="35sp" />
+                android:textSize="35sp"
+                android:singleLine="true"
+                android:inputType="numberDecimal" />
 
             <ImageButton
                 android:id="@+id/button_copy"
