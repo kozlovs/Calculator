@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.example.android.calculator.R
 import com.example.android.calculator.databinding.FragmentCalculatorBinding
 import com.example.android.calculator.viewmodel.CalkViewModel
 
@@ -57,7 +59,11 @@ class CalculatorFragment : Fragment() {
             buttonBackspace.setOnClickListener { viewModel.backspace() }
             buttonResult.setOnClickListener { viewModel.result() }
 
-            buttonCopy.setOnClickListener { viewModel.copy() }
+            buttonCopy.setOnClickListener {
+                viewModel.copy()
+                Toast.makeText(context, getString(R.string.copied), Toast.LENGTH_SHORT)
+                    .show()
+            }
         }
     }
 

@@ -6,11 +6,7 @@ import com.example.android.calculator.repository.RepositoryImpl
 import kotlin.math.*
 
 class CalkViewModel : ViewModel() {
-    private val plus = " + "
-    private val minus = " - "
-    private val multiply = " \u00D7 "
-    private val divide = " \u00F7 "
-    private val zero = "0.0"
+
     private var a = 0.0
     private var b = 0.0
     private var result = 0.0
@@ -18,59 +14,77 @@ class CalkViewModel : ViewModel() {
     private var pointOn = false
     private var resultOn = false
     private var signOn = false
-    private var empty = ""
+
     private var sign: String? = null
 
     private val repository = RepositoryImpl()
-    val display = MutableLiveData(zero)
-    val history = MutableLiveData("")
+    val display = MutableLiveData(ZERO)
+    val history = MutableLiveData(EMPTY)
     val data = repository.getAll()
 
     fun setNumber(number: Int) {
-
-        display.value = if (pointOn) {
-            if (display.value.toString().endsWith(".0")) "${
-                display.value.toString().toDouble().toInt()
-            }.$number" else "${display.value.toString().toDouble()}$number"
-        } else {
-            if (display.value.toString().toDouble() == 0.0) "${number.toDouble()}" else "${
-                display.value.toString().toDouble().toInt()
-            }$number.0"
-        }
+        display.value =
+            if (pointOn) {
+                if (isDisplayValueInteger())
+                    "${getIntDisplayValue()}.$number"
+                else
+                    "${getDoubleDisplayValue()}$number"
+            } else {
+                if (isDisplayValueNull())
+                    "${number.toDouble()}"
+                else
+                    "${getIntDisplayValue()}$number.0"
+            }
     }
 
+    private fun isDisplayValueInteger(): Boolean {
+        return getStringDisplayValue().endsWith(".0")
+    }
+
+    private fun isDisplayValueNull(): Boolean {
+        return getStringDisplayValue() == ZERO
+    }
+
+    private fun getStringDisplayValue() = display.value.toString()
+
+    private fun getDoubleDisplayValue() = getStringDisplayValue().toDouble()
+
+    private fun getIntDisplayValue() = getDoubleDisplayValue().toInt()
+
+    private fun getDisplayLength() = getStringDisplayValue().length
+
     fun clear() {
-        display.value = zero
-        history.value = empty
+        display.value = ZERO
+        history.value = EMPTY
         a = 0.0
         b = 0.0
-        signOn = false
+
         pointOn = false
+        signOn = false
         resultOn = false
     }
 
     fun backspace() {
-        if (display.value == zero) {
+        if (display.value == ZERO) {
             pointOn = false
             signOn = false
             return
-        } else if (display.value.toString().isBlank()) {
-            display.value = zero
+        } else if (getStringDisplayValue().isBlank()) {
+            display.value = ZERO
             pointOn = false
             signOn = false
-        } else if (display.value.toString().endsWith(".0")) {
-            if (display.value.toString().length > 3) {
-                display.value = "" + display.value.toString().toDouble().toInt()
-                display.value = display.value.toString()
-                    .substring(0, display.value.toString().length - 1) + ".0"
+        } else if (isDisplayValueInteger()) {
+            if (getDisplayLength() > 3) {
+                display.value = getIntDisplayValue().toString()
+                display.value = getStringDisplayValue().substring(0, getDisplayLength() - 1) + ".0"
             } else {
-                display.value = zero
+                display.value = ZERO
             }
             pointOn = false
             signOn = false
-        } else display.value =
-            display.value.toString().substring(0, display.value.toString().length - 1)
-        if (display.value.toString().endsWith(".")) {
+        } else
+            display.value = getStringDisplayValue().substring(0, getDisplayLength() - 1)
+        if (getStringDisplayValue().endsWith(".")) {
             pointOn = false
             signOn = false
             display.value += 0
@@ -79,15 +93,15 @@ class CalkViewModel : ViewModel() {
 
     private fun setSign(action: Actions) {
         if (signOn) calculateResult()
-        a = display.value.toString().toDouble()
+        a = getDoubleDisplayValue()
         sign = when (action) {
-            Actions.PLUS -> plus
-            Actions.MINUS -> minus
-            Actions.MULTIPLY -> multiply
-            Actions.DIVIDE -> divide
+            Actions.PLUS -> PLUS
+            Actions.MINUS -> MINUS
+            Actions.MULTIPLY -> MULTIPLY
+            Actions.DIVIDE -> DIVIDE
         }
-        history.value = display.value.toString() + sign
-        display.value = zero
+        history.value = getStringDisplayValue() + sign
+        display.value = ZERO
         currentAction = action
         signOn = true
         pointOn = false
@@ -110,24 +124,24 @@ class CalkViewModel : ViewModel() {
     }
 
     fun changeSign() {
-        if (display.value.toString().toDouble() != 0.0)
-            display.value = (display.value.toString().toDouble() * -1).toString()
+        if (getStringDisplayValue() != ZERO)
+            display.value = (getDoubleDisplayValue() * -1).toString()
     }
 
     fun factorial() {
-        if (display.value.toString().endsWith(".0") && display.value.toString() != zero) {
-            var result = 1
-            for (i in 1..display.value.toString().toDouble().toInt()) result *= i
-            display.value = "$result.0"
+        if (isDisplayValueInteger() && getStringDisplayValue() != ZERO) {
+            var result = 1.0
+            for (i in 1..getIntDisplayValue()) result *= i
+            display.value = "$result"
         }
     }
 
     fun pow() {
-        display.value = display.value.toString().toDouble().pow(2.0).toString()
+        display.value = getDoubleDisplayValue().pow(2.0).toString()
     }
 
     fun sqrt() {
-        display.value = sqrt(display.value.toString().toDouble()).toString()
+        display.value = sqrt(getDoubleDisplayValue()).toString()
     }
 
     fun point() {
@@ -145,11 +159,11 @@ class CalkViewModel : ViewModel() {
 
     private fun calculateResult() { //вычисление результата
         if (resultOn && !signOn) { //отображение истории при повторном нажатии на "="
-            a = display.value.toString().toDouble()
+            a = getDoubleDisplayValue()
             history.value = "${display.value}$sign$b ="
         } else { //отображение истории при нажатии на "="
-            b = display.value.toString().toDouble()
-            history.value = "${history.value.toString()} ${display.value.toString()} ="
+            b = getDoubleDisplayValue()
+            history.value = "${history.value} ${getStringDisplayValue()} ="
         }
         result = when (currentAction) {
             Actions.PLUS -> a + b
@@ -163,8 +177,8 @@ class CalkViewModel : ViewModel() {
 
     fun percent() { //вычисление процентов
         if (currentAction == null || resultOn) return
-        b = display.value.toString().toDouble()
-        history.value = "${history.value.toString()}${display.value.toString()} % ="
+        b = getDoubleDisplayValue()
+        history.value = "${history.value}${getStringDisplayValue()} % ="
         result = when (currentAction) {
             Actions.PLUS -> a + b * a / 100
             Actions.MINUS -> a - b * a / 100
@@ -178,12 +192,19 @@ class CalkViewModel : ViewModel() {
     }
 
     fun copy() {
-//        val text = binding.currentDisplayTextView.text.toString()
+//        val text = getStringDisplayValue()
 //        val clipData = ClipData.newPlainText("text", text)
 //        val clipboardManager =
 //            getSystemService(AppCompatActivity.CLIPBOARD_SERVICE) as ClipboardManager
 //        clipboardManager.setPrimaryClip(clipData)
-//        Toast.makeText(applicationContext, getString(R.string.copied), Toast.LENGTH_SHORT)
-//            .show()
+    }
+
+    companion object {
+        private const val PLUS = " + "
+        private const val MINUS = " - "
+        private const val MULTIPLY = " \u00D7 "
+        private const val DIVIDE = " \u00F7 "
+        private const val ZERO = "0.0"
+        private const val EMPTY = ""
     }
 }
