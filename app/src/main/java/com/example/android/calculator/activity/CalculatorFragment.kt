@@ -1,5 +1,7 @@
 package com.example.android.calculator.activity
 
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +14,7 @@ import com.example.android.calculator.databinding.FragmentCalculatorBinding
 import com.example.android.calculator.viewmodel.CalkViewModel
 
 class CalculatorFragment : Fragment() {
-
+    private lateinit var clipboardManager: ClipboardManager
     private lateinit var binding: FragmentCalculatorBinding
     private val viewModel: CalkViewModel by viewModels(
         ownerProducer = ::requireParentFragment
@@ -24,12 +26,13 @@ class CalculatorFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentCalculatorBinding.inflate(inflater, container, false)
-        bind()
+        clipboardManager = container?.context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        setListeners()
         updateView()
         return binding.root
     }
 
-    private fun bind() {
+    private fun setListeners() {
         binding.apply {
             button0.setOnClickListener { viewModel.setNumber(0) }
             button1.setOnClickListener { viewModel.setNumber(1) }
@@ -60,8 +63,9 @@ class CalculatorFragment : Fragment() {
             buttonResult.setOnClickListener { viewModel.result() }
 
             buttonCopy.setOnClickListener {
-                viewModel.copy()
-                Toast.makeText(context, getString(R.string.copied), Toast.LENGTH_SHORT)
+                clipboardManager.setPrimaryClip(viewModel.getClipData())
+                Toast
+                    .makeText(context, getString(R.string.copied), Toast.LENGTH_SHORT)
                     .show()
             }
         }

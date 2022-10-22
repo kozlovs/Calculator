@@ -1,5 +1,6 @@
 package com.example.android.calculator.viewmodel
 
+import android.content.ClipData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.android.calculator.repository.RepositoryImpl
@@ -191,12 +192,9 @@ class CalkViewModel : ViewModel() {
         pointOn = false
     }
 
-    fun copy() {
-//        val text = getStringDisplayValue()
-//        val clipData = ClipData.newPlainText("text", text)
-//        val clipboardManager =
-//            getSystemService(AppCompatActivity.CLIPBOARD_SERVICE) as ClipboardManager
-//        clipboardManager.setPrimaryClip(clipData)
+    fun getClipData() : ClipData {
+        val text = getStringDisplayValue()
+        return ClipData.newPlainText("text", text)
     }
 
     companion object {
